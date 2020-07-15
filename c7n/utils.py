@@ -118,7 +118,6 @@ def type_schema(
         type_name, inherits=None, rinherit=None,
         aliases=None, required=None, **props):
     """jsonschema generation helper
-
     params:
      - type_name: name of the type
      - inherits: list of document fragments that are required via anyOf[$ref]
@@ -171,7 +170,6 @@ class DateTimeEncoder(json.JSONEncoder):
 
 def group_by(resources, key):
     """Return a mapping of key value to resources with the corresponding value.
-
     Key may be specified as dotted form for nested dictionary lookup
     """
     resource_map = {}
@@ -200,7 +198,6 @@ def chunks(iterable, size=50):
 
 def camelResource(obj):
     """Some sources from apis return lowerCased where as describe calls
-
     always return TitleCase, this function turns the former to the later
     """
     if not isinstance(obj, dict):
@@ -346,12 +343,10 @@ def snapshot_identifier(prefix, db_identifier):
 retry_log = logging.getLogger('c7n.retry')
 
 
-def get_retry(retry_codes=(), max_attempts=8, min_delay=1, log_retries=False):
+def get_retry(codes=(), max_attempts=8, min_delay=1, log_retries=False):
     """Decorator for retry boto3 api call on transient errors.
-
     https://www.awsarchitectureblog.com/2015/03/backoff.html
     https://en.wikipedia.org/wiki/Exponential_backoff
-
     :param codes: A sequence of retryable error codes.
     :param max_attempts: The max number of retries, by default the delay
            time is proportional to the max number of attempts.
@@ -360,21 +355,18 @@ def get_retry(retry_codes=(), max_attempts=8, min_delay=1, log_retries=False):
     :param _max_delay: The maximum delay for any retry interval *note*
            this parameter is only exposed for unit testing, as its
            derived from the number of attempts.
-
     Returns a function for invoking aws client calls that
     retries on retryable error codes.
     """
     max_delay = max(min_delay, 2) ** max_attempts
 
-    def _retry(func, *args, ignore_err_codes=(), **kw):
+    def _retry(func, *args, **kw):
         for idx, delay in enumerate(
                 backoff_delays(min_delay, max_delay, jitter=True)):
             try:
                 return func(*args, **kw)
             except ClientError as e:
-                if e.response['Error']['Code'] in ignore_err_codes:
-                    return
-                elif e.response['Error']['Code'] not in retry_codes:
+                if e.response['Error']['Code'] not in codes:
                     raise
                 elif idx == max_attempts - 1:
                     raise
@@ -611,8 +603,8 @@ class QueryParser:
 
             if not cls.multi_value and isinstance(values, list):
                 raise PolicyValidationError(
-                    "%s Query Filter Invalid Key: Value:%s Must be single valued" % (
-                        cls.type_name, key))
+                    "%s QUery Filter Invalid Key: Value:%s Must be single valued" % (
+                        cls.type_name, key, values))
             elif not cls.multi_value:
                 values = [values]
 
@@ -652,7 +644,6 @@ def get_annotation_prefix(s):
 
 def merge_dict_list(dict_iter):
     """take an list of dictionaries and merge them.
-
     last dict wins/overwrites on keys.
     """
     result = {}
@@ -663,7 +654,6 @@ def merge_dict_list(dict_iter):
 
 def merge_dict(a, b):
     """Perform a merge of dictionaries a and b
-
     Any subdictionaries will be recursively merged.
     Any leaf elements in the form of a list or scalar will use the value from a
     """
