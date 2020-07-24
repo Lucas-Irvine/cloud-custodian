@@ -117,7 +117,6 @@ ResourceMap = {
     "aws.opswork-stack": "c7n.resources.opsworks.OpsworkStack",
     "aws.peering-connection": "c7n.resources.vpc.PeeringConnection",
     'aws.qldb': 'c7n.resources.qldb.QLDB',
-    "aws.quotas": 'c7n.resources.quotas.'
     "aws.r53domain": "c7n.resources.route53.Route53Domain",
     "aws.rds": "c7n.resources.rds.RDS",
     "aws.rds-cluster": "c7n.resources.rdscluster.RDSCluster",
@@ -149,6 +148,8 @@ ResourceMap = {
     "aws.secrets-manager": "c7n.resources.secretsmanager.SecretsManager",
     "aws.security-group": "c7n.resources.vpc.SecurityGroup",
     "aws.serverless-app": "c7n.resources.sar.ServerlessApp",
+    "aws.service-quota": 'c7n.resources.quotas.ServiceQuota',
+    "aws.service-quota-request": 'c7n.resources.quotas.ServiceQuotaRequest',
     "aws.shield-attack": "c7n.resources.shield.ShieldAttack",
     "aws.shield-protection": "c7n.resources.shield.ShieldProtection",
     "aws.simpledb": "c7n.resources.simpledb.SimpleDB",

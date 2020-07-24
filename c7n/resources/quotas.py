@@ -485,3 +485,71 @@ class InTemplateFilter(Filter):
             if r['QuotaCode'] in quotas:
                 results.append(r)
         return results
+
+@ServiceQuota.filter_registry.register('association-status')
+class AssociationFilter(ValueFilter):
+    """
+    Filter on a service quota's template association status
+
+    .. code-block:: yaml
+
+        policies:
+          - name: in-template-check
+            resource: aws.service-quota
+            filters:
+              - type: association-status
+                value: 'ASSOCIATED'
+                op: equal
+    """
+
+    annotation_key = "c7n:AssociationStatus"
+    value_key = '"c7n:AssociationStatus".ServiceQuotaTemplateAssociationStatus'
+    schema = type_schema('association-status', rinherit=ValueFilter.schema)
+    schema_alias = False
+    permissions = ('servicequota:GetServiceQuotaTemplateAssociationStatus',)
+
+
+    def process(self, resources, event=None):
+        self.data['key'] = self.value_key
+        client = local_session(self.manager.session_factory, region='us-east-1').client('')
+
+        def _augment(r):
+            try:
+                r[self.annotation_key] = self.manager.retry(
+                    client.get_function, FunctionName=r['FunctionArn'])
+                r[self.annotation_key].pop('ResponseMetadata')
+            except ClientError as e:
+                if e.response['Error']['Code'] == ErrAccessDenied:
+                    self.log.warning(
+                        "Access denied getting lambda:%s",
+                        r['FunctionName'])
+                raise
+            return r
+
+        with self.executor_factory(max_workers=3) as w:
+            resources = list(filter(None, w.map(_augment, resources)))
+            return super(ReservedConcurrency, self).process(resources, event)
+
+    def process(self, resources, event):
+        client = local_session(
+            self.manager.session_factory, region='us-east-1'
+        ).client('')
+        results = []
+        requests = []
+        token = ''
+        while True:
+            if token:
+                res = client.list_service_quota_increase_requests_in_template(NextToken=token)
+            else:
+                res = client.list_service_quota_increase_requests_in_template()
+            r = res['ServiceQuotaIncreaseRequestInTemplateList']
+            requests.extend(r)
+            if res.get('NextToken'):
+                token = res['NextToken']
+            else:
+                break
+        quotas = [r['QuotaCode'] for r in requests]
+        for r in resources:
+            if r['QuotaCode'] in quotas:
+                results.append(r)
+        return results
