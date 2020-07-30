@@ -6,6 +6,7 @@ ResourceMap = {
     "aws.app-elb": "c7n.resources.appelb.AppELB",
     "aws.app-elb-target-group": "c7n.resources.appelb.AppELBTargetGroup",
     "aws.asg": "c7n.resources.asg.ASG",
+    "aws.backup-job": "c7n.resources.backup.BackupJob",
     "aws.backup-plan": "c7n.resources.backup.BackupPlan",
     "aws.backup-vault": "c7n.resources.backup.BackupVault",
     "aws.batch-compute": "c7n.resources.batch.ComputeEnvironment",

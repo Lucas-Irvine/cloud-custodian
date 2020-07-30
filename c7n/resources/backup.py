@@ -89,3 +89,13 @@ class BackupVault(QueryResourceManager):
 class KmsFilter(KmsRelatedFilter):
 
     RelatedIdsExpression = 'EncryptionKeyArn'
+
+
+@resources.register('backup-job')
+class BackupJob(QueryResourceManager):
+
+    class resource_type(TypeInfo):
+        service = 'backup'
+        enum_spec = ('list_backup_jobs', 'BackupJobs', None)
+        name = id = 'BackupJobId'
+        date = 'CreationDate'

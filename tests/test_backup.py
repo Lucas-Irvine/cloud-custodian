@@ -110,3 +110,16 @@ class BackupVaultTest(BaseTest):
         self.assertTrue(len(resources), 1)
         aliases = kms.list_aliases(KeyId=resources[0]['EncryptionKeyArn'])
         self.assertEqual(aliases['Aliases'][0]['AliasName'], 'alias/aws/backup')
+
+
+class BackupJobTest(BaseTest):
+
+    def test_backup_job_get_resources(self):
+        factory = self.replay_flight_data('test_backup_job_get_resources')
+        p = self.load_policy({
+            "name": "backup-job", "resource": "backup-job"},
+            session_factory=factory)
+        resources = p.run()
+        self.assertEqual(
+            resources[0]['BackupJobId'],
+            '6eebb97a-9bb6-4f74-b986-954eba222c34')
