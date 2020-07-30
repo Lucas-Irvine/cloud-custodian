@@ -1,0 +1,20 @@
+{
+    "status_code": 200,
+    "data": {
+        "ResponseMetadata": {},
+        "BackupJobs": [
+            {
+                "AccountId": "0123456789012",
+                "BackupJobId": "6eebb97a-9bb6-4f74-b986-954eba222c34",
+                "BackupVaultName": "Default",
+                "BackupVaultArn": "arn:aws:backup:us-east-1:0123456789012:backup-vault:Default",
+                "RecoveryPointArn": "arn:aws:ec2:us-east-1::snapshot/snap-0ef116d892da25144",
+                "ResourceArn": "arn:aws:ec2:us-east-1:0123456789012:volume/vol-02e9c0677eba008b5",
+                "State": "RUNNING",
+                "PercentDone": "0.0",
+                "IamRoleArn": "arn:aws:iam::0123456789012:role/service-role/AWSBackupDefaultServiceRole",
+                "ResourceType": "EBS"
+            }
+        ]
+    }
+}
