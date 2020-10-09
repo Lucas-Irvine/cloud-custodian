@@ -86,3 +86,71 @@ class HSMClient(QueryResourceManager):
         detail_spec = ('describe_luna_client', 'ClientArn', None, None)
         arn = id = 'ClientArn'
         name = 'Label'
+
+
+@resources.register('cloudhsm-backup')
+class CloudHSMBackup(QueryResourceManager):
+
+    class resource_type(TypeInfo):
+        service = 'cloudhsmv2'
+        arn_type = 'backup'
+        permission_prefix = arn_service = 'cloudhsm'
+        enum_spec = ('describe_backups', 'Backups', None)
+        id = name = 'BackupId'
+        filter_name = 'Filters'
+        filter_type = 'scalar'
+        universal_taggable = object()
+
+    augment = universal_augment
+
+
+@CloudHSMBackup.action_registry.register('delete')
+class DeleteHSMBackup(BaseAction):
+    """Delete a cloudHSM backup
+
+    :example:
+
+    .. code-block:: yaml
+            policies:
+              - name: cloudhsm-backup-delete
+                resource: cloudhsm-backup
+                actions:
+                  - delete
+    """
+
+    schema = type_schema('delete')
+    valid_origin_states = ('CREATE_IN_PROGRESS', 'READY')
+    permissions = ('cloudhsm:DeleteBackup',)
+
+    def process(self, resources):
+        resources = self.filter_resources(resources, 'State', self.valid_origin_states)
+        client = local_session(self.manager.session_factory).client('cloudhsmv2')
+        for r in resources:
+            self.manager.retry(client.delete_backup, BackupId=r['BackupId'], ignore_err_codes=(
+                'CloudHsmResourceNotFoundException',))
+
+
+@CloudHSMBackup.action_registry.register('restore')
+class RestoreHSMBackup(BaseAction):
+    """Restore a cloudHSM backup
+
+    :example:
+
+    .. code-block:: yaml
+            policies:
+              - name: cloudhsm-backup-restore
+                resource: cloudhsm-backup
+                actions:
+                  - restore
+    """
+
+    schema = type_schema('restore')
+    valid_origin_states = ('PENDING_DELETION')
+    permissions = ('cloudhsm:RestoreBackup',)
+
+    def process(self, resources):
+        resources = self.filter_resources(resources, 'State', self.valid_origin_states)
+        client = local_session(self.manager.session_factory).client('cloudhsmv2')
+        for r in resources:
+            self.manager.retry(client.restore_backup, BackupId=r['BackupId'], ignore_err_codes=(
+                'CloudHsmResourceNotFoundException',))

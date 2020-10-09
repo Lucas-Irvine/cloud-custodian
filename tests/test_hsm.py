@@ -66,3 +66,37 @@ class CloudHSMClusterTest(BaseTest):
         tags = client.list_tags(ResourceId=id)
         tag_map = {t["Key"]: t["Value"] for t in tags["TagList"]}
         self.assertTrue("c7n" in tag_map)
+
+    def test_cloudhsm_backup_delete(self):
+        factory = self.record_flight_data("test_cloudhsm_backup_delete")
+        client = factory().client("cloudhsmv2")
+        p = self.load_policy(
+            {
+                "name": "cloudhsm",
+                "resource": "cloudhsm-backup",
+                "actions": [{"type": "delete"}]
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+        hsm_backups = client.describe_backups().get('Backups')[0].get('State')
+        self.assertFalse(hsm_backups)
+
+    def test_cloudhsm_backup_restore(self):
+        factory = self.record_flight_data("test_cloudhsm_backup_restore")
+        client = factory().client("cloudhsmv2")
+        p = self.load_policy(
+            {
+                "name": "cloudhsm",
+                "resource": "cloudhsm-backup",
+                "actions": [{"type": "restore"}]
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+        if self.recording:
+            time.sleep(25)
+        self.assertEqual(client.describe_backups().get(
+            'Backups')[0].get('State'), 'READY')
